@@ -1,1 +1,1 @@
-Project moved ot https://github.com/brainbot-com/raiden
+Project moved to https://github.com/brainbot-com/raiden
