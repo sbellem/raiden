@@ -3,8 +3,10 @@ from raiden.transport import UDPTransport
 from raiden.app import create_network
 from raiden.tasks import TransferTask
 import gevent
+
 from ethereum import slogging
 slogging.configure("encoding:debug,protocol:debug,service:debug,tasks:debug,transport:debug")
+
 
 def test_mediated_transfer(num_transfers=100, num_nodes=10, num_assets=1, channels_per_node=2):
 
@@ -84,7 +86,25 @@ def test_mediated_transfer(num_transfers=100, num_nodes=10, num_assets=1, channe
     tps = completed_transfers / elapsed
     print 'transfers completed:{} per second:{}'.format(completed_transfers, tps)
 
+
+def run_profiled(num_transfers, num_nodes, num_assets, channels_per_node):
+    GreenletProfiler.set_clock_type('cpu')
+    GreenletProfiler.start()
+    test_mediated_transfer(num_transfers, num_nodes, num_assets, channels_per_node)
+    GreenletProfiler.stop()
+    stats = GreenletProfiler.get_func_stats()
+    stats.print_all()
+    stats.save('profile.callgrind', type='callgrind')
+
+
 if __name__ == '__main__':
-    test_mediated_transfer()
-    test_mediated_transfer(num_transfers=1000)
-    #test_mediated_transfer(num_transfers=1000, num_nodes=10, num_assets=10, channels_per_node=3)
+    num_transfers = 1000
+    num_nodes = 10
+    num_assets = 1
+    channels_per_node = 2
+
+    if True:
+        test_mediated_transfer(num_transfers, num_nodes, num_assets, channels_per_node)
+    else:
+        import GreenletProfiler
+        run_profiled(num_transfers, num_nodes, num_assets, channels_per_node)
